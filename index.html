@@ -983,8 +983,25 @@
       //  so the page still works during setup.
       // ============================================================
 
-      const FORMSPREE_FORM_ID = "https://formspree.io/f/mojbndlq"; // <-- paste your Formspree ID here (e.g. "xyzabcde")
+      // You can paste any of these — they all work:
+      //   "mojbndlq"
+      //   "https://formspree.io/f/mojbndlq"
+      //   "formspree.io/f/mojbndlq"
+      // The code normalizes whatever you give it down to the form ID and
+      // rebuilds the endpoint URL itself.
+      const FORMSPREE_FORM_ID = "https://formspree.io/f/mojbndlq";
       const CONTACT_EMAIL = "abhranildas01@nexiora-ai.com";
+
+      // Pull the form ID out of any of the accepted input styles. The Formspree
+      // endpoint is always https://formspree.io/f/{id}, so we just take the last
+      // non-empty path segment of whatever was pasted in.
+      function buildFormspreeEndpoint(input) {
+        const trimmed = (input || "").trim().replace(/\/+$/, "");
+        if (!trimmed) return "";
+        const id = trimmed.split("/").pop();
+        return id ? "https://formspree.io/f/" + id : "";
+      }
+      const FORMSPREE_ENDPOINT = buildFormspreeEndpoint(FORMSPREE_FORM_ID);
 
       const form = document.getElementById("contact-form");
       const submitBtn = document.getElementById("contact-submit");
@@ -1057,7 +1074,7 @@
 
         // If Formspree isn't configured yet, gracefully fall back to mailto:
         // so the page still works for the developer during setup.
-        if (!FORMSPREE_FORM_ID) {
+        if (!FORMSPREE_ENDPOINT) {
           showStatus(
             "info",
             "Opening your email client… if nothing happens, email us directly at <a href=\"mailto:" + CONTACT_EMAIL + "\" style=\"color:inherit;text-decoration:underline;\">" + CONTACT_EMAIL + "</a>."
@@ -1070,7 +1087,7 @@
         status.classList.remove("show");
 
         try {
-          const res = await fetch("https://formspree.io/f/" + FORMSPREE_FORM_ID, {
+          const res = await fetch(FORMSPREE_ENDPOINT, {
             method: "POST",
             headers: {
               "Accept": "application/json",
