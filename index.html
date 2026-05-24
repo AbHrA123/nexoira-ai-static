@@ -8,12 +8,8 @@
       name="description"
       content="NexioraAI helps schools scan handwritten answer sheets, review AI-assisted grading, publish trusted results, and turn every paper into personalized practice."
     />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Standalone: no external CSS/JS/font/image assets. Drop this file
+         anywhere and it just works. System font stack is the only typography. -->
     <style>
       :root {
         --canvas: #f6f8fb;
@@ -43,7 +39,7 @@
       html, body { margin: 0; padding: 0; }
 
       body {
-        font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+        font-family: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
         background: var(--canvas);
         color: var(--ink);
         line-height: 1.5;
@@ -59,10 +55,57 @@
         padding: 0 1.25rem;
       }
 
+      /* -------------------- Announcement banner -------------------- */
+      /* Pre-launch notice. Sticky at the very top so it stays visible while
+         scrolling. The header sticks just below it. */
+      .announce {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: linear-gradient(95deg, #0f172a 0%, #1d4ed8 45%, #b45309 100%);
+        color: #fff;
+        font-size: 0.85rem;
+        font-weight: 500;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .announce a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+        padding: 0.6rem 1rem;
+        text-align: center;
+        color: #fff;
+      }
+      .announce strong {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.15rem 0.55rem;
+        background: rgba(255, 255, 255, 0.18);
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .announce-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      .announce a:hover { background: rgba(0, 0, 0, 0.1); }
+
       /* -------------------- Header -------------------- */
       .header {
         position: sticky;
-        top: 0;
+        /* sits directly under the announcement banner; offset is calculated
+           at render time via JS (CSS doesn't know the banner height ahead). */
+        top: var(--announce-h, 40px);
         z-index: 40;
         background: rgba(255, 255, 255, 0.88);
         backdrop-filter: blur(14px);
@@ -402,6 +445,60 @@
       }
       .feature h3 { margin: 0 0 0.5rem; font-size: 1.05rem; font-weight: 700; }
       .feature p { margin: 0; color: var(--ink-2); font-size: 0.9rem; line-height: 1.6; }
+      .feature p strong { color: var(--ink); font-weight: 700; }
+      .feature p em { color: var(--brand-700); font-style: normal; font-weight: 600; }
+      .feature-list {
+        margin: 0.875rem 0 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 0.4rem;
+      }
+      .feature-list li {
+        position: relative;
+        padding-left: 1.1rem;
+        font-size: 0.82rem;
+        color: var(--ink-2);
+        line-height: 1.5;
+      }
+      .feature-list li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.5rem;
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: var(--brand-500);
+      }
+
+      /* Data-ownership reassurance strip below the feature grid. */
+      .ownership-strip {
+        margin-top: 2.5rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1.25rem 1.5rem;
+        border-radius: 20px;
+        border: 1px solid var(--line);
+        background:
+          radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.10), transparent 35%),
+          radial-gradient(circle at 100% 0%, rgba(37, 99, 235, 0.08), transparent 38%),
+          var(--surface);
+      }
+      .ownership-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--emerald-50);
+        color: var(--emerald-700);
+        flex-shrink: 0;
+      }
+      .ownership-title { margin: 0 0 0.25rem; font-size: 0.95rem; font-weight: 700; color: var(--ink); }
+      .ownership-body { margin: 0; font-size: 0.85rem; line-height: 1.55; color: var(--ink-2); }
 
       /* -------------------- Contact -------------------- */
       .contact {
@@ -437,7 +534,7 @@
         color: var(--ink-2);
         font-weight: 500;
       }
-      .contact-pill code { font-family: "Inter", monospace; font-weight: 600; color: var(--ink); background: transparent; }
+      .contact-pill code { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; font-weight: 600; color: var(--ink); background: transparent; font-size: 0.85rem; }
 
       form { display: grid; gap: 0.875rem; }
       .field { display: grid; gap: 0.375rem; }
@@ -504,6 +601,20 @@
     </style>
   </head>
   <body>
+    <div class="announce" role="region" aria-label="Pre-launch announcement">
+      <a href="#contact">
+        <strong>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+          Coming soon
+        </strong>
+        <span>We&apos;re not live yet — get in touch for early pilot access.</span>
+        <span class="announce-cta">
+          Request access
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </span>
+      </a>
+    </div>
+
     <header class="header">
       <div class="container header-inner">
         <a href="#top" class="brand" aria-label="NexioraAI home">
@@ -516,7 +627,7 @@
         </nav>
         <div class="header-actions">
           <a href="#contact" class="btn btn-brand">
-            Contact us
+            Request early access
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </a>
         </div>
@@ -529,8 +640,8 @@
           <div class="hero-grid">
             <div>
               <span class="eyebrow">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v3"/><path d="m18 6-2 2"/><path d="M21 12h-3"/><path d="m18 18-2-2"/><path d="M12 21v-3"/><path d="m6 18 2-2"/><path d="M3 12h3"/><path d="m6 6 2 2"/></svg>
-                Shaping the Future of Education with AI
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+                Coming soon · Early pilot access open
               </span>
               <h1>
                 Grade every paper.
@@ -543,11 +654,11 @@
               </p>
               <div class="hero-actions">
                 <a href="#contact" class="btn btn-brand btn-lg">
-                  Book pilot
+                  Get early pilot access
                   <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </a>
                 <a href="#features" class="btn btn-ghost btn-lg">
-                  See product
+                  See what&apos;s coming
                 </a>
               </div>
 
@@ -644,24 +755,33 @@
       <section id="features" class="features">
         <div class="container">
           <div class="section-head">
-            <p class="section-eyebrow">Product</p>
-            <h2 class="section-title">An assessment loop that runs end-to-end.</h2>
+            <p class="section-eyebrow">What you get</p>
+            <h2 class="section-title">A full assessment &amp; learning loop — owned by your school.</h2>
             <p class="section-sub">
-              Scan, grade, review, publish, and learn from every paper — without
-              changing the school timetable.
+              From the moment a paper is scanned to the moment a student finishes
+              their personalised practice quiz, every step lives inside your
+              school&apos;s bubble. We build the tooling; the data stays yours.
             </p>
           </div>
 
           <div class="feature-grid">
             <article class="feature">
               <div class="feature-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" x2="17" y1="12" y2="12"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" x2="17" y1="12" y2="12"/><path d="M7 12h10"/></svg>
               </div>
-              <h3>Scan from any phone</h3>
+              <h3>Scan from anywhere</h3>
               <p>
-                Teachers point a phone camera at scanned answer sheets; pages stream
-                straight into the grading queue with OCR running in the background.
+                ADF document scanners, phone cameras, multi-function printers,
+                shared drives — feed papers in however your school already works.
+                <strong>Your scans stay yours;</strong> nothing trains our models,
+                nothing leaves your bucket.
               </p>
+              <ul class="feature-list" aria-label="Supported sources">
+                <li>Auto-document feeders (ADF)</li>
+                <li>Phone &amp; tablet cameras</li>
+                <li>Existing scanner uploads</li>
+                <li>Custom source? Just ask.</li>
+              </ul>
             </article>
 
             <article class="feature">
@@ -678,14 +798,69 @@
 
             <article class="feature">
               <div class="feature-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 14 4-4 4 4 5-5"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 14 4-4 4 4 5-5"/><circle cx="7" cy="14" r="1.2"/><circle cx="11" cy="10" r="1.2"/><circle cx="15" cy="14" r="1.2"/></svg>
               </div>
-              <h3>Insights that act</h3>
+              <h3>Class-wise insights &amp; focus points</h3>
               <p>
-                Class weak-area heatmaps, per-student weak topics, principal-ready
-                Excel reports, and an AI tutor grounded in the school's own books.
+                Topic-grouped weak-area heatmaps for each class and each test, a
+                principal-ready Excel workbook updated daily with a Daily History
+                tab, and at-risk-student call-outs the teacher can act on in one
+                click.
               </p>
             </article>
+
+            <article class="feature">
+              <div class="feature-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 10-10-5L2 10l10 5z"/><path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/></svg>
+              </div>
+              <h3>AI tutor that knows your books</h3>
+              <p>
+                Every student gets a private tutor grounded in <em>your</em>
+                school's own textbooks, notes, and previous papers. Every answer
+                cites the page it came from — no hallucinations, no random
+                internet content, no model training on your material.
+              </p>
+            </article>
+
+            <article class="feature">
+              <div class="feature-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-2.5 2.5h-5A2.5 2.5 0 0 1 2 19.5v-15A2.5 2.5 0 0 1 4.5 2z"/><path d="M14 6h6a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-4"/><path d="M17 11v.01"/><path d="M17 14v.01"/><path d="M17 17v.01"/></svg>
+              </div>
+              <h3>Personalised quizzes for every student</h3>
+              <p>
+                After every paper, NexioraAI auto-generates a custom quiz for each
+                student — drawn from <em>their</em> weak topics, aligned to your
+                syllabus, calibrated to the questions they actually got wrong.
+                Practice exactly where it improves them, refreshed automatically.
+              </p>
+            </article>
+
+            <article class="feature">
+              <div class="feature-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+              </div>
+              <h3>Your data stays yours</h3>
+              <p>
+                Scans, marks, student chats, teacher notes — all of it lives in
+                <em>your</em> school's storage bucket. We never train models on it,
+                never sell it, never share it. Export the full dataset at any time,
+                or revoke our access in one click.
+              </p>
+            </article>
+          </div>
+
+          <div class="ownership-strip">
+            <span class="ownership-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <div>
+              <p class="ownership-title">It&apos;s your school. It&apos;s your data.</p>
+              <p class="ownership-body">
+                No third-party resale, no lock-in.
+                Storage lives in the school&apos;s own GCP bucket, and every student
+                chat / mark / answer sheet is exportable on demand.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -695,12 +870,13 @@
           <div class="contact-card">
             <div class="contact-grid">
               <div class="contact-info">
-                <p class="section-eyebrow">Talk to us</p>
-                <h2>Bring one real assessment. We'll show you the rest.</h2>
+                <p class="section-eyebrow">Early pilot · Not live yet</p>
+                <h2>Join the early pilot list.</h2>
                 <p>
-                  Tell us about your school and what you'd like to pilot.
-                  Submitting this form opens your email client with the message
-                  ready to send.
+                  NexioraAI is still in pre-launch. Schools who get in touch now
+                  go on the early pilot list — we&apos;ll personally reach out to
+                  scope a real assessment together. Submitting this form opens
+                  your email client with the message ready to send.
                 </p>
                 <div class="contact-pill">
                   <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>
@@ -730,10 +906,10 @@
 
                 <div class="submit-row">
                   <button type="submit" class="btn btn-brand btn-lg">
-                    Contact us
+                    Request early access
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
                   </button>
-                  <small>We respond within one school day.</small>
+                  <small>We&apos;ll personally reach out about your pilot.</small>
                 </div>
 
                 <div id="form-status" class="form-status" role="status" aria-live="polite"></div>
@@ -759,6 +935,20 @@
       // Footer year
       document.getElementById("year").textContent = new Date().getFullYear();
 
+      // Keep the sticky header just below the sticky announcement banner —
+      // the banner can wrap to two lines on narrow screens, so the offset
+      // can't be a hard-coded value.
+      function syncAnnounceHeight() {
+        const el = document.querySelector(".announce");
+        if (!el) return;
+        document.documentElement.style.setProperty("--announce-h", el.offsetHeight + "px");
+      }
+      syncAnnounceHeight();
+      window.addEventListener("resize", syncAnnounceHeight);
+      // Also recheck once fonts/layout settle.
+      window.addEventListener("load", syncAnnounceHeight);
+      // And update the email subject so it carries the pre-launch context.
+
       // Contact form: build a mailto: URL with the message pre-filled and
       // open the user's email client. No backend required — clicking
       // "Contact us" reliably sends to abhranildas01@nexiora-ai.com.
@@ -783,7 +973,7 @@
           return;
         }
 
-        const subject = "NexioraAI inquiry from " + name + (school ? " (" + school + ")" : "");
+        const subject = "Early pilot interest — " + name + (school ? " (" + school + ")" : "");
         const bodyLines = [
           "Hi NexioraAI team,",
           "",
