@@ -580,6 +580,14 @@
       }
       .form-status.show { display: block; }
 
+      /* Submit button has two icons stacked — arrow when idle, spinner when
+         loading. Toggled via .is-sending class on the button. */
+      #contact-submit .submit-spinner { display: none; animation: spin 0.8s linear infinite; }
+      #contact-submit.is-sending { opacity: 0.85; cursor: progress; }
+      #contact-submit.is-sending .submit-arrow { display: none; }
+      #contact-submit.is-sending .submit-spinner { display: inline-block; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
       /* -------------------- Footer -------------------- */
       footer {
         border-top: 1px solid var(--line);
@@ -904,10 +912,15 @@
                   <textarea id="message" name="message" placeholder="Tell us about the grade, subject, and what you'd like to pilot." required></textarea>
                 </div>
 
+                <!-- Honeypot: real users leave this empty; bots usually fill it.
+                     Formspree drops the submission when _gotcha is non-empty. -->
+                <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" />
+
                 <div class="submit-row">
-                  <button type="submit" class="btn btn-brand btn-lg">
-                    Request early access
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
+                  <button id="contact-submit" type="submit" class="btn btn-brand btn-lg">
+                    <span class="submit-label">Request early access</span>
+                    <svg class="icon submit-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
+                    <svg class="icon submit-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
                   </button>
                   <small>We&apos;ll personally reach out about your pilot.</small>
                 </div>
@@ -949,30 +962,61 @@
       window.addEventListener("load", syncAnnounceHeight);
       // And update the email subject so it carries the pre-launch context.
 
-      // Contact form: build a mailto: URL with the message pre-filled and
-      // open the user's email client. No backend required — clicking
-      // "Contact us" reliably sends to abhranildas01@nexiora-ai.com.
+      // ============================================================
+      //  Contact form — sends email directly via Formspree.
+      // ============================================================
+      //  ONE-TIME SETUP (~60s):
+      //    1. Go to https://formspree.io and sign up with
+      //       abhranildas01@nexiora-ai.com — this is the address the
+      //       form submissions get delivered to.
+      //    2. Create a new form. Formspree gives you an endpoint like:
+      //         https://formspree.io/f/xyzabcde
+      //       (the 8-char string after /f/ is your form ID).
+      //    3. Paste that string into FORMSPREE_FORM_ID below.
+      //    4. The very first submission triggers a one-time confirmation
+      //       email from Formspree — click the link to activate. After
+      //       that every submission lands in your inbox automatically.
+      //
+      //  Free tier: 50 submissions / month. Upgrade if you outgrow it.
+      //  If FORMSPREE_FORM_ID stays empty the form falls back to
+      //  opening the visitor's email client (the old mailto behaviour),
+      //  so the page still works during setup.
+      // ============================================================
+
+      const FORMSPREE_FORM_ID = "https://formspree.io/f/mojbndlq"; // <-- paste your Formspree ID here (e.g. "xyzabcde")
       const CONTACT_EMAIL = "abhranildas01@nexiora-ai.com";
+
       const form = document.getElementById("contact-form");
+      const submitBtn = document.getElementById("contact-submit");
       const status = document.getElementById("form-status");
 
-      form.addEventListener("submit", function (event) {
-        event.preventDefault();
-        const data = new FormData(form);
-        const name = (data.get("name") || "").toString().trim();
-        const email = (data.get("email") || "").toString().trim();
-        const school = (data.get("school") || "").toString().trim();
-        const message = (data.get("message") || "").toString().trim();
+      function showStatus(kind, text) {
+        const tones = {
+          ok:    { bg: "#ecfdf5", color: "#047857", border: "#a7f3d0" },
+          err:   { bg: "#fef2f5", color: "#be123c", border: "#fecdd3" },
+          info:  { bg: "#eff5ff", color: "#1d4ed8", border: "#dbe7fe" },
+        };
+        const t = tones[kind] || tones.info;
+        status.innerHTML = text; // allow inline anchor in the fallback link
+        status.style.background = t.bg;
+        status.style.color = t.color;
+        status.style.borderColor = t.border;
+        status.classList.add("show");
+      }
 
-        if (!name || !email || !message) {
-          status.textContent = "Please fill in your name, email, and message.";
-          status.style.background = "#fef2f5";
-          status.style.color = "#be123c";
-          status.style.borderColor = "#fecdd3";
-          status.classList.add("show");
-          return;
+      function setSending(sending) {
+        if (sending) {
+          submitBtn.classList.add("is-sending");
+          submitBtn.disabled = true;
+          submitBtn.querySelector(".submit-label").textContent = "Sending…";
+        } else {
+          submitBtn.classList.remove("is-sending");
+          submitBtn.disabled = false;
+          submitBtn.querySelector(".submit-label").textContent = "Request early access";
         }
+      }
 
+      function buildMailtoHref(name, email, school, message) {
         const subject = "Early pilot interest — " + name + (school ? " (" + school + ")" : "");
         const bodyLines = [
           "Hi NexioraAI team,",
@@ -984,20 +1028,92 @@
           school ? "School: " + school : null,
           "Email: " + email,
         ].filter(Boolean);
-        const body = bodyLines.join("\n");
-
-        const href =
+        return (
           "mailto:" + encodeURIComponent(CONTACT_EMAIL) +
           "?subject=" + encodeURIComponent(subject) +
-          "&body=" + encodeURIComponent(body);
+          "&body=" + encodeURIComponent(bodyLines.join("\n"))
+        );
+      }
 
-        status.textContent = "Opening your email client… if nothing happens, email us directly at " + CONTACT_EMAIL + ".";
-        status.style.background = "#ecfdf5";
-        status.style.color = "#047857";
-        status.style.borderColor = "#a7f3d0";
-        status.classList.add("show");
+      form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        const data = new FormData(form);
+        const name = (data.get("name") || "").toString().trim();
+        const email = (data.get("email") || "").toString().trim();
+        const school = (data.get("school") || "").toString().trim();
+        const message = (data.get("message") || "").toString().trim();
+        const honeypot = (data.get("_gotcha") || "").toString();
 
-        window.location.href = href;
+        if (!name || !email || !message) {
+          showStatus("err", "Please fill in your name, email, and message.");
+          return;
+        }
+        if (honeypot) {
+          // Silently succeed for bots — don't reveal that the honeypot caught them.
+          showStatus("ok", "Thanks — we&apos;ll be in touch.");
+          form.reset();
+          return;
+        }
+
+        // If Formspree isn't configured yet, gracefully fall back to mailto:
+        // so the page still works for the developer during setup.
+        if (!FORMSPREE_FORM_ID) {
+          showStatus(
+            "info",
+            "Opening your email client… if nothing happens, email us directly at <a href=\"mailto:" + CONTACT_EMAIL + "\" style=\"color:inherit;text-decoration:underline;\">" + CONTACT_EMAIL + "</a>."
+          );
+          window.location.href = buildMailtoHref(name, email, school, message);
+          return;
+        }
+
+        setSending(true);
+        status.classList.remove("show");
+
+        try {
+          const res = await fetch("https://formspree.io/f/" + FORMSPREE_FORM_ID, {
+            method: "POST",
+            headers: {
+              "Accept": "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name: name,
+              email: email,
+              school: school || "(not provided)",
+              message: message,
+              _subject: "Early pilot interest — " + name + (school ? " (" + school + ")" : ""),
+              _replyto: email,
+            }),
+          });
+
+          if (res.ok) {
+            showStatus(
+              "ok",
+              "Thanks, " + name.split(" ")[0] + " — your message landed in our inbox. We&apos;ll reach out within one school day."
+            );
+            form.reset();
+          } else {
+            // Formspree returns 4xx with a JSON error array on misconfig / rate-limit.
+            let detail = "";
+            try {
+              const body = await res.json();
+              detail = Array.isArray(body.errors) && body.errors[0]
+                ? (" (" + body.errors[0].message + ")")
+                : "";
+            } catch (_) { /* ignore parse errors */ }
+            throw new Error("Submission failed" + detail);
+          }
+        } catch (err) {
+          const fallback = buildMailtoHref(name, email, school, message);
+          showStatus(
+            "err",
+            "Couldn&apos;t send right now. " +
+            "<a href=\"" + fallback + "\" style=\"color:inherit;text-decoration:underline;\">Open your email client</a> " +
+            "or write to <a href=\"mailto:" + CONTACT_EMAIL + "\" style=\"color:inherit;text-decoration:underline;\">" + CONTACT_EMAIL + "</a>."
+          );
+        } finally {
+          setSending(false);
+        }
       });
     </script>
   </body>
