@@ -925,16 +925,16 @@
                 <p>
                   NexioraAI is still in pre-launch. Schools who get in touch now
                   go on the early pilot list — we&apos;ll personally reach out to
-                  scope a real assessment together. Submitting this form opens
-                  your email client with the message ready to send.
+                  scope a real assessment together. Submitting this form sends
+                  the request to our team, with a direct email fallback if needed.
                 </p>
                 <div class="contact-pill">
                   <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>
-                  <code>support@nexiora-ai.com</code>
+                  <code>hello@nexioraai.com</code>
                 </div>
               </div>
 
-              <form id="contact-form" novalidate>
+              <form id="contact-form" action="/api/contact" novalidate>
                 <div class="field-row">
                   <div class="field">
                     <label for="name">Name</label>
@@ -942,7 +942,7 @@
                   </div>
                   <div class="field">
                     <label for="school">School</label>
-                    <input id="school" name="school" type="text" placeholder="School name" autocomplete="organization" />
+                    <input id="school" name="school" type="text" placeholder="School name" required autocomplete="organization" />
                   </div>
                 </div>
                 <div class="field">
@@ -954,9 +954,8 @@
                   <textarea id="message" name="message" placeholder="Tell us about the grade, subject, and what you'd like to pilot." required></textarea>
                 </div>
 
-                <!-- Honeypot: real users leave this empty; bots usually fill it.
-                     Formspree drops the submission when _gotcha is non-empty. -->
-                <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" />
+                <!-- Honeypot: real users leave this empty; bots usually fill it. -->
+                <input type="text" name="companyWebsite" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" />
 
                 <div class="submit-row">
                   <button id="contact-submit" type="submit" class="btn btn-brand btn-lg">
@@ -981,7 +980,7 @@
         <nav class="footer-links" aria-label="Footer">
           <a href="#features">Product</a>
           <a href="#contact">Contact</a>
-          <a href="mailto:abhranildas01@nexiora-ai.com">Email</a>
+          <a href="mailto:hello@nexioraai.com">Email</a>
         </nav>
       </div>
     </footer>
@@ -1002,63 +1001,7 @@
       window.addEventListener("resize", syncAnnounceHeight);
       // Also recheck once fonts/layout settle.
       window.addEventListener("load", syncAnnounceHeight);
-      // And update the email subject so it carries the pre-launch context.
-
-      // ============================================================
-      //  Contact form — sends email directly via Formspree.
-      // ============================================================
-      //  ONE-TIME SETUP (~60s):
-      //    1. Go to https://formspree.io and sign up with
-      //       abhranildas01@nexiora-ai.com — this is the address the
-      //       form submissions get delivered to.
-      //    2. Create a new form. Formspree gives you an endpoint like:
-      //         https://formspree.io/f/xyzabcde
-      //       (the 8-char string after /f/ is your form ID).
-      //    3. Paste that string into FORMSPREE_FORM_ID below.
-      //    4. The very first submission triggers a one-time confirmation
-      //       email from Formspree — click the link to activate. After
-      //       that every submission lands in your inbox automatically.
-      //
-      //  Free tier: 50 submissions / month. Upgrade if you outgrow it.
-      //  If FORMSPREE_FORM_ID stays empty the form falls back to
-      //  opening the visitor's email client (the old mailto behaviour),
-      //  so the page still works during setup.
-      // ============================================================
-
-      // You can paste any of these — they all work:
-      //   "mojbndlq"
-      //   "https://formspree.io/f/mojbndlq"
-      //   "formspree.io/f/mojbndlq"
-      // The code normalizes whatever you give it down to the form ID and
-      // rebuilds the endpoint URL itself.
-      const FORMSPREE_FORM_ID = "https://formspree.io/f/mojbndlq";
-      // CONTACT_EMAIL  = primary recipient (the address Formspree is currently
-      //                  configured to deliver to). All mailto: hrefs put this
-      //                  in the To: field.
-      // CONTACT_EMAIL_CC = secondary recipient that should also receive every
-      //                  submission. Added to the mailto: fallback as a Cc and
-      //                  sent to Formspree as `_cc` (honoured on paid plans;
-      //                  silently ignored on the free tier — for guaranteed
-      //                  duplication, set up a Google Workspace alias /
-      //                  forwarding rule that fans out to both inboxes and
-      //                  point Formspree at the alias).
-      // CONTACT_EMAIL_DISPLAY = what visitors see on the page; intentionally
-      //                  different so we can present `support@` while routing
-      //                  actually goes to real inboxes.
-      const CONTACT_EMAIL = "abhranildas01@nexiora-ai.com";
-      const CONTACT_EMAIL_CC = "omyadav01@nexiora-ai.com";
-      const CONTACT_EMAIL_DISPLAY = "support@nexiora-ai.com";
-
-      // Pull the form ID out of any of the accepted input styles. The Formspree
-      // endpoint is always https://formspree.io/f/{id}, so we just take the last
-      // non-empty path segment of whatever was pasted in.
-      function buildFormspreeEndpoint(input) {
-        const trimmed = (input || "").trim().replace(/\/+$/, "");
-        if (!trimmed) return "";
-        const id = trimmed.split("/").pop();
-        return id ? "https://formspree.io/f/" + id : "";
-      }
-      const FORMSPREE_ENDPOINT = buildFormspreeEndpoint(FORMSPREE_FORM_ID);
+      const CONTACT_EMAIL = "hello@nexioraai.com";
 
       const form = document.getElementById("contact-form");
       const submitBtn = document.getElementById("contact-submit");
@@ -1071,7 +1014,7 @@
           info:  { bg: "#eff5ff", color: "#1d4ed8", border: "#dbe7fe" },
         };
         const t = tones[kind] || tones.info;
-        status.innerHTML = text; // allow inline anchor in the fallback link
+        status.innerHTML = text;
         status.style.background = t.bg;
         status.style.color = t.color;
         status.style.borderColor = t.border;
@@ -1090,22 +1033,21 @@
         }
       }
 
-      function buildMailtoHref(name, email, school, message) {
-        const subject = "Early pilot interest — " + name + (school ? " (" + school + ")" : "");
+      function buildMailtoHref(payload) {
+        const subject = "NexioraAI access request from " + (payload.school || payload.name);
         const bodyLines = [
-          "Hi NexioraAI team,",
+          "Name: " + payload.name,
+          "Email: " + payload.email,
+          "School: " + payload.school,
+          "Role: " + payload.role,
+          "Board: " + payload.board,
+          "Students: " + payload.students,
           "",
-          message,
-          "",
-          "—",
-          "Name: " + name,
-          school ? "School: " + school : null,
-          "Email: " + email,
+          payload.note,
         ].filter(Boolean);
         return (
           "mailto:" + encodeURIComponent(CONTACT_EMAIL) +
-          "?cc=" + encodeURIComponent(CONTACT_EMAIL_CC) +
-          "&subject=" + encodeURIComponent(subject) +
+          "?subject=" + encodeURIComponent(subject) +
           "&body=" + encodeURIComponent(bodyLines.join("\n"))
         );
       }
@@ -1113,83 +1055,54 @@
       form.addEventListener("submit", async function (event) {
         event.preventDefault();
         const data = new FormData(form);
-        const name = (data.get("name") || "").toString().trim();
-        const email = (data.get("email") || "").toString().trim();
-        const school = (data.get("school") || "").toString().trim();
-        const message = (data.get("message") || "").toString().trim();
-        const honeypot = (data.get("_gotcha") || "").toString();
+        status.classList.remove("show");
+        const payload = {
+          name: String(data.get("name") || "").trim(),
+          email: String(data.get("email") || "").trim(),
+          school: String(data.get("school") || "").trim(),
+          role: "",
+          board: "",
+          students: "",
+          note: String(data.get("message") || "").trim(),
+          source: "prelogin_static",
+        };
 
-        if (!name || !email || !message) {
-          showStatus("err", "Please fill in your name, email, and message.");
+        if (!payload.name || !payload.email || !payload.school || !payload.note) {
+          showStatus("err", "Please fill in your name, email, school, and message.");
           return;
         }
-        if (honeypot) {
-          // Silently succeed for bots — don't reveal that the honeypot caught them.
+        if (data.get("companyWebsite")) {
           showStatus("ok", "Thanks — we&apos;ll be in touch.");
           form.reset();
           return;
         }
 
-        // If Formspree isn't configured yet, gracefully fall back to mailto:
-        // so the page still works for the developer during setup.
-        if (!FORMSPREE_ENDPOINT) {
-          showStatus(
-            "info",
-            "Opening your email client… if nothing happens, email us directly at <a href=\"mailto:" + CONTACT_EMAIL + "\" style=\"color:inherit;text-decoration:underline;\">" + CONTACT_EMAIL_DISPLAY + "</a>."
-          );
-          window.location.href = buildMailtoHref(name, email, school, message);
-          return;
-        }
-
         setSending(true);
-        status.classList.remove("show");
 
         try {
-          const res = await fetch(FORMSPREE_ENDPOINT, {
+          const res = await fetch(form.getAttribute("action") || "/api/contact", {
             method: "POST",
             headers: {
-              "Accept": "application/json",
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              name: name,
-              email: email,
-              school: school || "(not provided)",
-              message: message,
-              _subject: "Early pilot interest — " + name + (school ? " (" + school + ")" : ""),
-              _replyto: email,
-              // Honoured by Formspree paid plans; ignored on free. For
-              // guaranteed delivery to both inboxes, set up a forwarding
-              // alias and point Formspree at it — see the comment block
-              // around CONTACT_EMAIL_CC for context.
-              _cc: CONTACT_EMAIL_CC,
-            }),
+            body: JSON.stringify(payload),
+            cache: "no-store",
           });
+          const body = await res.json().catch(function () { return {}; });
+          if (!res.ok) throw new Error(body.detail || "Could not submit the request.");
 
-          if (res.ok) {
-            showStatus(
-              "ok",
-              "Thanks, " + name.split(" ")[0] + " — your message landed in our inbox. We&apos;ll reach out within one school day."
-            );
-            form.reset();
-          } else {
-            // Formspree returns 4xx with a JSON error array on misconfig / rate-limit.
-            let detail = "";
-            try {
-              const body = await res.json();
-              detail = Array.isArray(body.errors) && body.errors[0]
-                ? (" (" + body.errors[0].message + ")")
-                : "";
-            } catch (_) { /* ignore parse errors */ }
-            throw new Error("Submission failed" + detail);
-          }
+          showStatus(
+            "ok",
+            "Thanks, " + payload.name.split(" ")[0] + " — your message landed in our inbox. We&apos;ll reach out within one school day."
+          );
+          form.reset();
         } catch (err) {
-          const fallback = buildMailtoHref(name, email, school, message);
+          const fallback = buildMailtoHref(payload);
           showStatus(
             "err",
             "Couldn&apos;t send right now. " +
             "<a href=\"" + fallback + "\" style=\"color:inherit;text-decoration:underline;\">Open your email client</a> " +
-            "or write to <a href=\"mailto:" + CONTACT_EMAIL + "\" style=\"color:inherit;text-decoration:underline;\">" + CONTACT_EMAIL_DISPLAY + "</a>."
+            "or write to <a href=\"mailto:" + CONTACT_EMAIL + "\" style=\"color:inherit;text-decoration:underline;\">" + CONTACT_EMAIL + "</a>."
           );
         } finally {
           setSending(false);
